@@ -1,6 +1,97 @@
-.content.welcome{
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.content-welcome{
+    // display: flex;
+    // flex-direction: rô;
+    // justify-content: center;
+    // background: #14162E;
+    // align-items: center;
+    
     height: 100vh;
+    .header-chat{
+        height: 50px;
+        display: flex;
+        // flex-direction: row;
+        display: block;
+        @media (min-width: 768px) {
+            display: none;
+            i{
+                margin: 0px;
+                font-size: 25px;
+            }
+        }
+        i{
+            margin: 10px;
+            font-size: 25px;
+        }
+    }
+    .title{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background-color: white;
+        // background: #14162E;
+        opacity: 0.5;
+        align-items: center;
+        height: calc(100% - 200px);
+        @media (min-width: 768px) {
+            height: calc(100% - 150px);
+        }
+    }
+    .row{
+        display: flex;
+        flex-direction: row;
+        height: 300px;
+        // justify-content: center;
+        align-items: center;
+        .col-4{
+            text-align: center;
+        }
+    }
+    .footer-chat{
+        height: 150px;
+        position: absolute;
+        width: 100%;
+        background: linear-gradient(to bottom, rgba(253, 252, 252, 0.507) , #68B2A0);
+        display: flex;
+        // z-index:-2;
+        justify-content: center;
+        align-items: center;
+        @media (min-width: 768px) {
+            max-width: calc(100% - 280px);
+        }
+
+        .chat{    
+            // position: absolute;
+            border: 1px solid #F5F5f5;
+            display: flex;
+            border-radius: 15px;
+            height: 50px;
+            color: rgb(82 82 82/var(--tw-text-opacity));
+            // width: 250px;
+            margin-top: 30px;
+            padding: 5px;
+            bottom: 30px;
+            // left: 30%;
+            width: 50%;
+            background-color: white;
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            img{
+                padding: 10px;
+            }
+            .input-chat {
+                border: none;
+                outline: none;
+                color: #ccc;
+                // padding: 10px;
+                width: 100%;    
+                // max-width: calc(100% - 71.14px);
+                // max-width: 100%;
+            }
+            .group-button{
+                display: flex;
+                // flex-basis: 1;
+                flex-direction: row;
+                width: 71.14px;
+            }
+        }
+    }
 }

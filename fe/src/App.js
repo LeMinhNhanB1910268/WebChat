@@ -4,7 +4,7 @@ import './App.scss';
 import Router from './Routes'
 const App = () => {
   return (
-    <div>
+    <div className='backgroud-image'>
       <Router></Router>
     </div>
   );
