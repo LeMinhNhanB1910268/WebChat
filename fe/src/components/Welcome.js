@@ -2,20 +2,15 @@ import React, { useEffect, useState } from 'react'
 import './Welcome.scss'
 import { createHistory, getAllHistory } from '../service/historyService'
 import { createQuestion } from '../service/questionService'
+import axios from 'axios'
 import Micro from '../assets/micro.svg'
 import Send from '../assets/send.svg'
-export default function () {
+import { useNavigate } from 'react-router-dom'
+export default function (props) {
+  const navigate = useNavigate();
   const [InputChat, setInputChat] = useState('');
-  const [ID] = useState(localStorage.getItem('userID'))
-  const [IDHistory, setIDHistory] = useState('');
-  const [ArrHistory, setArrHistory] = useState('');
+  const [ID] = useState(localStorage.getItem('user_i'))
   const [recognition, setRecognition] = useState(null);
-
-  const getHistorys = async () => {
-    let rp = await getAllHistory();
-    setArrHistory(rp)
-    console.log(rp);
-  }
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition;
 
@@ -35,22 +30,31 @@ export default function () {
     setRecognition(recognitionInstance);
   }, [])
   const handleSendChat = async () => {
-    let title = InputChat
-    let user_id = ID
-    let data = { title, user_id }
-    let rp = await createHistory(data);
-    let IDChat = rp.id;
-    setIDHistory(IDChat)
-    console.log(IDChat)
-    let rp1 = await createQuestion({
-      history_id: IDChat,
-      content: InputChat,
-      answer: InputChat,
-      url_audio_content: 'hihi',
-      url_audio_answer: "ahihi"
-    })
-    getHistorys();
-    console.log(rp1);
+    // props.handleNewHitory();
+    const formdata = new URLSearchParams()
+    formdata.append('input', InputChat)
+    axios.post('https://api.zalo.ai/v1/tts/synthesize', formdata,
+      {
+        headers: {
+          apikey: 'Wn5P5FrSoPb1uJhb2t8TOI8gkpStUVPj',
+        }
+      }).then(async res => {
+        // console.log
+
+        let response = await createHistory({title: InputChat, user_id: ID})
+        let rp1 = await createQuestion({
+          history_id: response.id,
+          content: InputChat,
+          answer: InputChat,
+          url_audio_content: res.data.data.url,
+          url_audio_answer: res.data.data.url
+        })
+        if(response){
+          setInputChat('')
+          props.getHistorys();
+          navigate("/history/"+response.id)
+        }
+      }).catch(e => console.log(e))
   }
   const startListening = () => {
     if (recognition) {
@@ -68,34 +72,77 @@ export default function () {
     document.querySelector(".col-10").style.opacity = 0.5
   }
   return (
-    <div className='content-welcome'>
-      <div className='header-chat'>
-        <i onClick={() => { showMenu() }} type='button' className="fa-solid fa-list" ></i>
+    <div className="content-welcome">
+      <div className="header-chat">
+        <i
+          onClick={() => {
+            showMenu();
+          }}
+          type="button"
+          className="fa-solid fa-list"
+        ></i>
       </div>
-      <div className='title'>
-        <div className='row'>
-          <div style={{display:'flex',justifyContent:'center'}}>
+      <div className="title">
+        <div className="row">
+          <div style={{ display: "flex", justifyContent: "center" }}>
             <h1>Welcome to ChatABC</h1>
           </div>
-          <div className='col-4'><span>Example</span>
+          <div className="col-4">
+            <span>Example</span>
           </div>
-          <div className='col-4'><span>Example</span></div>
-          <div className='col-4'><span>Example</span></div>
+          <div className="col-4">
+            <span>Example</span>
+          </div>
+          <div className="col-4">
+            <span>Example</span>
+          </div>
         </div>
       </div>
-      <div className='footer-chat'>
-        <div className='chat'>
-          <input className='input-chat'
-            placeholder='Type your message....'
-            onChange={(event) => { setInputChat(event.target.value) }}
-            value={InputChat}>
-          </input>
-          <div className='group-button'>
-            <img src={Micro} onClick={() => { startListening() }}></img>
-            <img src={Send} onClick={() => { handleSendChat() }}></img>
+      <div className="footer-chat">
+        <div className="chat">
+          {/* <form onSubmit={(e)=>handleSendChat(e)}> */}
+          <textarea
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                setInputChat('')
+                handleSendChat();
+              }
+            }}
+            type="text"
+            className="input-chat"
+            maxLength={10000}
+            placeholder="Type your message...."
+            onChange={(event) => {
+              setInputChat(event.target.value);
+              var textarea = document.querySelector(".input-chat");
+              var div = textarea.parentElement;
+              console.log(textarea.scrollHeight);
+              if (textarea.scrollHeight > 46 && textarea.scrollHeight < 100)
+                div.style.height = textarea.scrollHeight + "px";
+              if (event.target.value === "") {
+                div.style.height = "50px";
+              }
+            }}
+            value={InputChat}
+          ></textarea>
+          {/* </form> */}
+          <div className="group-button">
+            <img
+              src={Micro}
+              onClick={() => {
+                startListening();
+              }}
+            ></img>
+            <img
+              id={"send"}
+              src={Send}
+              onClick={() => {
+                handleSendChat();
+              }}
+            ></img>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

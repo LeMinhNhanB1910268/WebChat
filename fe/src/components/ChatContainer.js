@@ -1,31 +1,25 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router-dom'
-import { getHistory } from '../service/historyService'
 import './ChatContainer.scss'
 import Audo from '../assets/audio.svg'
-import { getQuestion } from '../service/questionService'
-import { createHistory, getAllHistory } from '../service/historyService'
+import { getQuestion, updateLike } from '../service/questionService'
 import { createQuestion } from '../service/questionService'
 import Micro from '../assets/micro.svg'
 import Send from '../assets/send.svg'
 import axios from 'axios'
 
 export default function ChatContainer(props) {
-  const [history, setHistory] = useState('')
+  const textRef = useRef(null);
+  const textRef1 = useRef(null);
   const [question, setQuestion] = useState('')
   const [InputChat, setInputChat] = useState('');
   const [recognition, setRecognition] = useState(null);
-  // const [isOpen, setIsOpen] = useState(false);
   const params = useParams();
   const [ID] = useState(localStorage.getItem('userID'))
+  const [IsCopy, setIsCopy] = useState(false);
   const { id } = params;
   // console.log(id);
   useEffect(() => {
-
-    // const ID = props.History_id;
-    // console.log(props.History_id);
-    // setHistory(id)
-    // console.log(history)
     var objDiv = document.querySelector(".Chatbox")
     var scrollHeight = objDiv.scrollHeight;
     objDiv.scrollTop = scrollHeight;  
@@ -68,17 +62,16 @@ export default function ChatContainer(props) {
     setQuestion(rp)
     console.log(rp);
   }
-  const play_Audio = () => {
-    const audio = new Audio('https://chunk.lab.zalo.ai/7feba81d037eea20b36f/7feba81d037eea20b36f');
-    audio.play();
-  }
+ 
   const playAudio = (url) => {
     const audio = new Audio(url);
     audio.play();
   };
   const handleSendChat = async () => {
+    const text = InputChat;
+    
     const formdata = new URLSearchParams()
-    formdata.append('input', InputChat)
+    formdata.append('input', text)
     axios.post('https://api.zalo.ai/v1/tts/synthesize', formdata,
       {
         headers: {
@@ -88,25 +81,17 @@ export default function ChatContainer(props) {
         console.log();
         let rp1 = await createQuestion({
           history_id: id,
-          content: InputChat,
-          answer: InputChat,
+          content: text,
+          answer: text,
           url_audio_content: res.data.data.url,
           url_audio_answer: res.data.data.url
         })
-        // const timeoutId = setTimeout(() => {
-        //   setIsOpen(true);
-        // }, 4000);
+        setInputChat('')
         getChat();
 
-        console.log(rp1);
+        // console.lơog(rp1);
       }).catch(e => console.log(e))
-    // let title = InputChat
-    // let user_id = ID
-    // let data = {title, user_id}
-    // let rp = await createHistory(data);
-    // let IDChat = rp.id;
-    // setIDHistory(IDChat)
-    // console.log(IDChat)
+
   }
   const startListening = () => {
     if (recognition) {
@@ -117,11 +102,30 @@ export default function ChatContainer(props) {
     // console.log('a');
     const menu = document.querySelector(".col-2")
     // console.log(menu.style.display)
+    menu.style.animation = '0.2s ease-out 0s 1 normal none running slideInFromRight'
     menu.style.position = 'absolute'
     menu.style.display = 'block'
     document.querySelector(".col-10").style.pointerEvents = 'none'
     document.querySelector(".col-10").style.opacity = 0.5
   }
+  const handleLike = async (id , favorite) => {
+    const res = await updateLike(id, {favorite: favorite})
+    getChat();
+  }
+  
+  const copyTextUser = () => {
+    const textElement = textRef.current;
+    const text = textElement.textContent;
+    navigator.clipboard.writeText(text)
+  };
+
+  const copyTextBot = () => {
+    const textElement = textRef1.current;
+    const text = textElement.textContent;
+    navigator.clipboard.writeText(text)
+    setIsCopy(true);
+    setTimeout(setIsCopy(false),3000)
+  };
   return (
     <div className='content-chat'>
        <div className='header1-chat'>
@@ -130,21 +134,22 @@ export default function ChatContainer(props) {
       <div className='Chatbox'>
         {
           question && question.map((item, index) => {
+
             return (
               <div key={index}>
                 <div className='chat-user'>
                   <div className='chat-item'>
                     <div className='chatUser'>
-                      <p>{item.content}</p>
+                      <p ref={textRef}>{item.content}</p>
                     </div>
                     <hr className='space'></hr>
                     <div className='operation'>
                       <div className='ahuhu'>
-                        <span><i className="fa-regular fa-clipboard"></i></span>
+                        <span onClick={()=>{copyTextUser()}}><i className="fa-regular fa-clipboard"></i></span>
                         <span type="button" onClick={() => { playAudio(item.url_audio_content) }}><img src={Audo}></img></span>
                       </div>
                       <div>
-                        <span>Thowfi gian</span>
+                        <p style={{fontSize:12,color: '#ccc'}}>{'thời gian'}</p>
                       </div>
                     </div>
                   </div>
@@ -154,18 +159,34 @@ export default function ChatContainer(props) {
                     (<div className='chat-bot'>
                       <div className='chat-item'>
                         <div className='chatUser'>
-                          <p>{item.answer}</p>
+                          <p ref={textRef1}>{item.answer}</p>
                         </div>
                         <hr className='space'></hr>
                         <div className='operation'>
                           <div className='ahuhu'>
-                            <span><i className="fa-regular fa-clipboard"></i></span>
-                            <span><i className="fa-solid fa-thumbs-up"></i></span>
-                            <span><i className="fa-solid fa-thumbs-down"></i></span>
-                            <span type="button" onClick={() => { playAudio(item.url_audio_content) }}><img src={Audo}></img></span>
+                            {
+                              IsCopy ? 
+                              (<span><p>Copied</p><i className="fa-regular fa-clipboard"></i></span>):
+                              (<span onClick={()=>{copyTextBot()}} type='button'> <i className="fa-regular fa-clipboard"></i></span>)
+                            }
+                            <span>
+                              {
+                                item.favorite === true ? 
+                                (<i type='button' onClick={()=>{handleLike(item._id,null)}} style={{color:'blue'}} className="fa-solid fa-thumbs-up"></i>) 
+                                : (<i type='button' onClick={()=>{handleLike(item._id,true)}} style={{color:'gray'}} className="fa-solid fa-thumbs-up"></i>)
+                              }
+                              </span>
+                            <span>
+                              {
+                                item.favorite === false ?
+                                (<i type='button' onClick={()=>{handleLike(item._id,null)}} style={{color:'red'}} className="fa-solid fa-thumbs-down"></i>)
+                                : (<i type='button' onClick={()=>{handleLike(item._id,false)}} style={{color:'gray'}} className="fa-solid fa-thumbs-down"></i>)
+                              }
+                              </span>
+                            <span type="button" onClick={() => {playAudio(item.url_audio_content)}}><img src={Audo}></img></span>
                           </div>
                           <div>
-                            <span>Thowfi gian</span>
+                            <p style={{fontSize:12,color: '#ccc'}}>{'thời gian'}</p>
                           </div>
                         </div>
                       </div>
@@ -178,11 +199,31 @@ export default function ChatContainer(props) {
       </div>
       <div className='footer-chat'>
         <div className='chat'>
-        <input className='input-chat'
+        <textarea className='input-chat'
+          maxLength={10000}
           placeholder='Type your message....'
-          onChange={(event) => { setInputChat(event.target.value) }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              var textarea = document.querySelector(".input-chat");
+              var div = textarea.parentElement;
+              div.style.height = "50px";
+              handleSendChat();
+            }
+          }}
+          onChange={(event) => 
+            {
+              setInputChat(event.target.value)
+              var textarea = document.querySelector(".input-chat");
+              var div = textarea.parentElement;
+              // console.log(textarea.scrollHeight);
+              if (textarea.scrollHeight > 46 && textarea.scrollHeight < 100)
+                div.style.height = textarea.scrollHeight + "px";
+              if (event.target.value === "") {
+                div.style.height = "50px";
+              }
+           }}
           value={InputChat}>
-        </input>
+        </textarea>
         <div className='group-button'>
           <img src={Micro} onClick={() => { startListening() }}></img>
           <img src={Send} onClick={() => { handleSendChat() }}></img>

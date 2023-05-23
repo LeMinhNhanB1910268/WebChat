@@ -16,10 +16,14 @@ const createQuestion = async (data) => {
 const updateQuestion = async (questionID, data) => {
     return (await api.put('api/question/'+questionID, data)).data;
 }
+const updateLike = async (questionID, data) => {
+    return (await api.put('api/question/'+questionID, data)).data;
+}
 
 export {
     getAllQuestion,
     getQuestion,
     createQuestion,
     updateQuestion,
+    updateLike,
 }

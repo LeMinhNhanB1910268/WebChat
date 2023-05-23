@@ -1,101 +1,262 @@
-import React, { useEffect,useState} from 'react'
-import './Login.scss';
-import {Routes, Route, Link} from 'react-router-dom'
-import { useNavigate} from 'react-router-dom';
-import Logo from '../assets/logo.svg'
-import Username from '../assets/user-octagon.svg'
-import Password from '../assets/frame.svg'
-import {Login} from '../service/AuthService'
-import 'bootstrap/dist/css/bootstrap.min.css';
-export default function LoginPage() {
+import React, { useEffect, useState, useRef } from "react";
+import "./Login.scss";
+// import { Routes, Route, Link } from "react-router-dom";
+import { useNavigate, useLocation, useParams, useHistory } from "react-router-dom";
+import Logo from "../assets/logo.svg";
+import Username from "../assets/user-octagon.svg";
+import Password from "../assets/frame.svg";
+import { Login, Register } from "../service/AuthService";
+import Typed from "typed.js";
+import "bootstrap/dist/css/bootstrap.min.css";
+const Welcome = () => {
+  const el = useRef(null);
+  useEffect(() => {
+    const typed = new Typed(el.current, {
+      strings: ["Welcome LOG IN CHAT ABC"],
+      typeSpeed: 50,
+    });
+    return () => {
+      // Destroy Typed instance during cleanup to stop animation
+      typed.destroy();
+    };
+  });
+  return (
+    <>
+      <div style={{ animation: "rotateIn 0.5s" }} className="welcome-logo">
+        <img src={Logo}></img>
+      </div>
+      <div className="welcome-text" ref={el}></div>
+    </>
+  );
+};
+const SignIn = ({ HadaleRotuer }) => {
   const navigate = useNavigate();
-  const [username,setUsername] = useState('')
-  const [password,setPassword] = useState('')
-  const [isShowPassword,setisShowPassword] = useState(false)
-
-  const handleLogin = async () => {
-    let isValid = true;
-    if(isValid){
-      const data = {username, password};
-      console.log(data);
-      let rp = await Login(data);
-      console.log('haha',rp);
-      if(rp){
-        localStorage.setItem('token', rp.data.token);
-        localStorage.setItem('userID', rp.data.id);
-        navigate('../');
-      }
-
-    }
-  }
-  const handleShowHidenPassword = () => {
-    setisShowPassword(!isShowPassword)
+  // const history = useHistory()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error_message,setError] = useState("");
+  const HadaleLogin = (e)=>{
+    e.preventDefault();
+    const data = {email,password}
+    const res = Login(data)
+    res.then((res)=>{
+      localStorage.setItem('token',res.data.token)
+      localStorage.setItem('user_i',res.data.id)
+      navigate("/") // Điều hướng đến trang kế tiếp
+      window.location.reload();
+    })
+    .catch(e=>{
+      if(e.response.status === 422)
+      setError(e.response.data)
+    })
   }
   return (
+    <>
+      <p className="login-title">Login</p>
+      <form onSubmit={(e)=>{HadaleLogin(e)}}>
+        <div className="input-group">
+          <div className="input-background">
+            <input
+              onChange={(e) => {
+                setEmail(e.target.value);
+              }}
+              value={email}
+              type="email"
+              placeholder="Email"
+            />
+            <i
+              type="button"
+              onClick={() => setEmail("")}
+              style={{ fontSize: 20, marginTop: 10, marginLeft: 10 }}
+              class="fa-regular fa-circle-xmark"
+            ></i>
+          </div>
+        </div>
+        {error_message.email && error_message.email.map((m,i)=><p style={{color:'red',fontSize:12,marginBottom:2,marginTop:-1,width:350,textAlign:'start'}} key={i}>{m}</p>)}
+        <div className="input-group">
+          <div className="input-background">
+            <input
+              onChange={(e) => {
+                setPassword(e.target.value);
+              }}
+              value={password}
+              style={{ width: "100%" }}
+              type="password"
+              placeholder="Password"
+            />
+            {/* <i style={{fontSize:20,marginTop:10,marginLeft: 10}} class="fa-regular fa-circle-xmark"></i> */}
+          </div>
+        </div>
+        {error_message.password && error_message.password.map((m,i)=><p style={{color:'red',fontSize:12,marginBottom:2,marginTop:-1,width:350,textAlign:'start'}} key={i}>{m}</p>)}
+        <div className="forgot-password-text">
+          <p>Recover Password ?</p>
+        </div>
+        <div className="submit-btn">
+          <button>Login</button>
+        </div>
+      </form>
+      <div className="group-navigate">
+        <p style={{ color: "white", fontSize: 16 }}>Don't have an account?</p>
+        <p
+          style={{ color: "white", fontSize: 16 }}
+          type="button"
+          onClick={() => {
+            HadaleRotuer("SignUp");
+          }}
+        >
+          Sign up
+        </p>
+      </div>
+    </>
+  );
+};
+
+const SignUp = ({ HadaleRotuer }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [password_confirmation, setPasswordConf] = useState("");
+  const [error_message,setError] = useState("")
+  const HandleSignUp = (e)=>{
+      e.preventDefault();
+      const data = {email,password,password_confirmation}
+      const res = Register(data)
+      res.then(res => {
+        localStorage.setItem('token',res.data.token)
+        localStorage.setItem('user_i',res.data.id)
+        window.location.href("/")
+      }).catch(e => {
+        if(e.response.status === 422)
+        setError(e.response.data)
+      })
+    // console.log({email,password});
+  }
+  return (
+    <>
+      <p className="login-title">Create Your Account</p>
+      {/* input Email */}
+      <form onSubmit={(e)=>HandleSignUp(e)}>
+      <div className="input-group">
+        <div className="input-background">
+          <input 
+              onChange={(e) => {
+                setEmail(e.target.value);
+              }}
+             value={email} 
+             type="email" placeholder="Email" />
+          <i
+            style={{ fontSize: 20, marginTop: 10, marginLeft: 10 }}
+            class="fa-regular fa-circle-xmark"
+          ></i>
+        </div>
+      </div>
+     {error_message.email && error_message.email.map((m,i)=><p style={{color:'red',fontSize:12,marginBottom:2,marginTop:-1,width:350,textAlign:'start'}} key={i}>{m}</p>)}
+      {/* input password */}
+      <div className="input-group">
+        <div className="input-background">
+          <input
+            onChange={(e) => {
+              setPassword(e.target.value);
+            }}
+            value={password} 
+            style={{ width: "100%" }}
+            type="password"
+            placeholder="Password"
+          />
+          {/* <i style={{fontSize:20,marginTop:10,marginLeft: 10}} class="fa-regular fa-circle-xmark"></i> */}
+        </div>
+      </div>
+      {error_message.password && error_message.password.map((m,i)=><p style={{color:'red',fontSize:12,marginBottom:2,marginTop:-1,width:350,textAlign:'start'}} key={i}>{m}</p>)}
+      {/* input password-conf */}
+      <div className="input-group">
+        <div className="input-background">
+          <input
+            onChange={(e) => {
+              setPasswordConf(e.target.value);
+            }}
+            value={password_confirmation} 
+            style={{ width: "100%" }}
+            type="password"
+            placeholder="Password"
+          />
+          {/* <i style={{fontSize:20,marginTop:10,marginLeft: 10}} class="fa-regular fa-circle-xmark"></i> */}
+        </div>
+      </div>
+      {error_message.password && error_message.password.map((m,i)=><p style={{color:'red',fontSize:12,marginBottom:2,marginTop:-1,width:350,textAlign:'start'}} key={i}>{m}</p>)}
+      <div style={{ marginTop: 10 }} className="submit-btn">
+        <button>Sign up</button>
+      </div>
+      </form>
+      <div className="group-navigate">
+        <p style={{ color: "white", fontSize: 16 }}>Already have an account?</p>
+        <p
+          style={{ color: "white", fontSize: 16 }}
+          type="button"
+          onClick={() => HadaleRotuer("Login")}
+        >
+          Login
+        </p>
+      </div>
+    </>
+  );
+};
+export default function LoginPage(props) {
+  const params = useParams();
+  // const state  = location.state;
+  const navigate = useNavigate();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [isShowPassword, setisShowPassword] = useState(false);
+  const [router, setRouter] = useState(params.params);
+  const handleLogin = async () => {
+    let isValid = true;
+    if (isValid) {
+      const data = { username, password };
+      console.log(data);
+      let rp = await Login(data);
+      console.log("haha", rp);
+      if (rp) {
+        localStorage.setItem("token", rp.data.token);
+        localStorage.setItem("userID", rp.data.id);
+        navigate("../");
+      }
+    }
+  };
+  const HadaleRotuer = (router) => {
+    setRouter(router);
+  };
+  const handleShowHidenPassword = () => {
+    setisShowPassword(!isShowPassword);
+  };
+  return (
     <div className="Content-login">
-      <div className='row'>
-        <div className='col-5'>
-          <div className='login-left'>
-            <img className='logo' src={Logo}></img>
-            <div className='text-login'>
-              <span>Welcome to LOGIN CHATABC</span>
-            </div>
-          </div>
+      <div className="Background">
+        <div className="Ellipse1" />
+        <div className="Ellipse2" />
+      </div>
+      <div className="content">
+        <div className="page-in">
+          {router === "SignUp" ? (
+            <SignUp HadaleRotuer={HadaleRotuer} />
+          ) : (
+            <SignIn HadaleRotuer={HadaleRotuer} />
+          )}
         </div>
-        <div className='col-1'>
-          <div className="vertical-line"></div>
+        <div className="signup-content">
+          {router === "SignUp" ? (
+            <SignUp HadaleRotuer={HadaleRotuer} />
+          ) : (
+            <Welcome />
+          )}
         </div>
-        <div className='col-6'>
-          <div className='login'>
-            <div className='title-login'>
-              <span>Sign-in Your Account</span>
-            </div>
-            <div className='input-login'>
-              <div className='row'>
-                  <div className='col-3'>
-                    <img src={Username}></img>
-                  </div>
-                  <div className='col-9'>
-                    <input placeholder='Username'
-                      onChange={(event)=>{setUsername(event.target.value)}}
-                      value ={username}>
-                  </input>
-                  </div>
-                </div>
-                <div className='row'>
-                  <div className='col-3'>
-                    <img src={Password}></img>
-                  </div>
-                  <div className='col-9'>
-                    <input placeholder='Password'
-                      type={isShowPassword ? 'text' : 'password'}
-                      onChange={(event)=>{setPassword(event.target.value)}}
-                      value ={password}>
-                    </input>
-                    <span onClick={()=>{handleShowHidenPassword()}}>
-                      <i className={isShowPassword ? 'fa-regular fa-eye' : 'fa-regular fa-eye-slash'}></i>
-                    </span>
-                  </div>
-                </div>
-              <button className='btn-login' onClick={()=>{handleLogin()}}>
-                  Log in
-              </button>
-            </div>
-            <div className='footer-login'>
-              <div className='row'>
-                <div className='col-9'>
-                  <span>Don't have an account?</span>
-                </div>
-                <div className='col-3'>
-                  <Link to='/sign-up'>
-                    <span>Sign up</span>
-                  </Link>
-                  </div>
-              </div>
-            </div>
-          </div>
+        <div className="vertical-line"></div>
+        <div className="login-content">
+          {router === "Login" ? (
+            <SignIn HadaleRotuer={HadaleRotuer} />
+          ) : (
+            <Welcome />
+          )}
         </div>
       </div>
     </div>
-  )
+  );
 }

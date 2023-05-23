@@ -2,7 +2,7 @@
     // display: flex;
     // flex-direction: rô;
     // justify-content: center;
-    // background: #14162E;
+    background: #F4F5FA;
     // align-items: center;
     
     height: 100vh;
@@ -25,15 +25,19 @@
     }
     .title{
         display: flex;
+        margin: 0px 10px;
         flex-direction: column;
         justify-content: center;
-        background-color: white;
+        background-color: #FFFFFF;
         // background: #14162E;
+        border:1px solid #E6EAEE;
         opacity: 0.5;
         align-items: center;
         height: calc(100% - 200px);
+        width: calc(100% - 31px);
         @media (min-width: 768px) {
             height: calc(100% - 150px);
+            // width: calc(100% - 31px);
         }
     }
     .row{
@@ -47,16 +51,20 @@
         }
     }
     .footer-chat{
-        height: 150px;
+        height: 130px;
         position: absolute;
-        width: 100%;
-        background: linear-gradient(to bottom, rgba(253, 252, 252, 0.507) , #68B2A0);
+        width: calc(100%  - 320px) ;
+        border: 1px solid #E6EAEE;
+        margin: 10px;
+        // border: 1px solid #666666;
+        background: linear-gradient(to bottom, #FAFAFD , #FFFFFF);
         display: flex;
         // z-index:-2;
+        border-radius: 10px;
         justify-content: center;
         align-items: center;
-        @media (min-width: 768px) {
-            max-width: calc(100% - 280px);
+        @media (max-width: 768px) {
+            width: calc(100% - 20px);
         }
 
         .chat{    
@@ -71,16 +79,21 @@
             padding: 5px;
             bottom: 30px;
             // left: 30%;
-            width: 50%;
+            width: 90%;
             background-color: white;
             box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
             img{
                 padding: 10px;
+                width: 40px;
+                height: 40px;
             }
             .input-chat {
                 border: none;
                 outline: none;
                 color: #ccc;
+                padding: 5px;
+                resize: none;
+                // word-wrap: break-word;
                 // padding: 10px;
                 width: 100%;    
                 // max-width: calc(100% - 71.14px);

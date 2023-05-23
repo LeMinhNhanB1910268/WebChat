@@ -19,7 +19,7 @@ const updateHistory = async (historyID, data) => {
 }
 
 const deleteHistory = async (historyID) => {
-    return (await api.delete('api/history/'+historyID))
+    return await api.delete('api/history/'+historyID)
 }
 
 export {
